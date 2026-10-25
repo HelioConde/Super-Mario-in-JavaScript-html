@@ -1,31 +1,48 @@
-# Super Mario — Experimento em JavaScript
+<div align="center">
+  <h1>🍄 Super Mario — Experimento Web</h1>
+  <p><strong>Estudo de movimentação, pulo, gravidade e interação com cenário usando JavaScript e jQuery.</strong></p>
+  <p><img alt="HTML/CSS/JS" src="https://img.shields.io/badge/HTML%20%2B%20CSS%20%2B%20JS-Jogo%20Web-F7DF1E?logo=javascript&logoColor=black"> <img alt="Status" src="https://img.shields.io/badge/status-prot%C3%B3tipo%20hist%C3%B3rico-64748b"></p>
+</div>
 
-**Projeto de jogo web inspirado em Super Mario, desenvolvido com HTML, CSS e JavaScript.**
+## Sobre o protótipo
 
-## Conteúdo
+Projeto antigo de jogo para navegador, inspirado nos clássicos de plataforma. A implementação usa **HTML, CSS, JavaScript e jQuery**, com sprites, cenários e áudio local.
 
-- `index.html` — ponto de entrada do projeto.
-- `css/` — estilos do jogo.
-- `js/` — scripts e lógica no navegador.
-- `img/` e `song/` — arquivos de imagem e áudio.
-- `index.md` — documento histórico do projeto.
+O script `js/script.js` define rotinas de **movimentação horizontal, pulo, gravidade, animações e colisão simplificada com pisos**. É um experimento de mecânicas, não uma reprodução completa dos jogos oficiais.
 
-## Como executar
-
-Clone o repositório ou baixe os arquivos. Na raiz, inicie um servidor estático:
+## Como testar
 
 ```bash
+git clone https://github.com/HelioConde/Super-Mario-in-JavaScript-html.git
+cd Super-Mario-in-JavaScript-html
 python -m http.server 8000
 ```
 
-Acesse `http://localhost:8000`. Não é necessário um servidor de jogo ou banco de dados para abrir a interface.
+Abra `http://localhost:8000`. O projeto não possui `package.json` e não depende de um servidor de jogo.
 
-## Estado
+**A compatibilidade com navegadores e tamanhos de tela atuais não foi validada nesta revisão**. O código utiliza posicionamento de elementos DOM e detecção simples de objetos; colisões e desempenho podem variar.
 
-Projeto **legado e experimental**. O comportamento da jogabilidade e a compatibilidade com navegadores modernos não foram revalidados nesta revisão de documentação.
+## Organização
 
-## Aviso de propriedade intelectual
+| Caminho | Conteúdo |
+| --- | --- |
+| `index.html` | Página inicial do protótipo |
+| `js/script.js` | Física simplificada, controles e animações |
+| `js/jquery.min.js` | Biblioteca histórica de interação |
+| `css/` | Estilos e disposição do cenário |
+| `img/` | Sprites e imagens |
+| `song/` | Recursos de áudio |
+| `index.md` | Documento histórico |
 
-Este é um projeto de aprendizado, **não oficial e não associado à Nintendo**. Mario e os recursos da franquia pertencem aos respectivos titulares. Verifique os direitos de uso de imagens e áudio antes de redistribuir o jogo.
+## O que precisaria melhorar
 
-Autor: [Hélio Conde](https://github.com/HelioConde).
+- Consolidar um loop único de atualização e movimento por tempo real decorrido.
+- Substituir a colisão baseada em `elementFromPoint` por uma camada de física consistente.
+- Tratar limites de tela, movimento contínuo, pausa e entrada por toque.
+- Criar testes básicos das regras de movimento antes de expandir fases.
+
+## Aviso legal
+
+**Projeto de aprendizado, não oficial.** Mario, suas imagens, músicas e demais recursos da franquia pertencem à Nintendo e aos respectivos titulares. O repositório não concede permissão para redistribuí-los comercialmente.
+
+Desenvolvido por [Hélio Conde](https://github.com/HelioConde).
