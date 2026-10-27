@@ -26,7 +26,7 @@
 
   const style = document.createElement("style");
   style.textContent = `
-    #home{display:grid!important;place-items:center;background:rgba(9,17,31,.94)!important;z-index:100!important}
+    #home{display:grid;place-items:center;background:rgba(9,17,31,.94)!important;z-index:100!important}
     #logo1{position:static!important;display:flex!important;flex-direction:column;align-items:center;gap:15px;
       width:min(90vw,560px)!important;white-space:normal!important;line-height:1.5}
     #logo1 button,.mario-btn{background:#ffcf46;color:#18181b;border:2px solid #fff;border-radius:12px;
@@ -53,7 +53,7 @@
 
   const hud = document.createElement("div");
   hud.className = "mario-hud";
-  hud.innerHTML = '<span id="mario-stats">DISTÂNCIA 0% · QUEDAS 0</span><span><button id="mario-reset">Reiniciar</button> <button id="mario-pause">Pausar</button></span>';
+  hud.innerHTML = '<span id="mario-stats">DISTÂNCIA 0% · QUEDAS 0</span><span><button id="mario-settings">Teclas</button> <button id="mario-reset">Reiniciar</button> <button id="mario-pause">Pausar</button></span>';
   document.body.appendChild(hud);
   const touch = document.createElement("div");
   touch.className = "mario-touch";
@@ -113,6 +113,7 @@
     $("#mario-pause").textContent = paused ? "Continuar" : "Pausar";
   }
   $("#mario-reset").addEventListener("click", reset);
+  $("#mario-settings").addEventListener("click", () => { togglePause(); if (configPanel) configPanel.style.display = "block"; });
   $("#mario-pause").addEventListener("click", togglePause);
 
   function active(name) {
