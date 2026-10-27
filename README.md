@@ -1,16 +1,41 @@
-<div align="center">
-  <h1>🍄 Super Mario — Experimento Web</h1>
-  <p><strong>Estudo de movimentação, pulo, gravidade e interação com cenário usando JavaScript e jQuery.</strong></p>
-  <p><img alt="HTML/CSS/JS" src="https://img.shields.io/badge/HTML%20%2B%20CSS%20%2B%20JS-Jogo%20Web-F7DF1E?logo=javascript&logoColor=black"> <img alt="Status" src="https://img.shields.io/badge/status-prot%C3%B3tipo%20hist%C3%B3rico-64748b"></p>
-</div>
+# 🍄 Super Mario — Plataforma Web
 
-## Sobre o protótipo
+Protótipo de jogo de plataforma para navegador, inspirado nos clássicos da Nintendo. Projeto de estudo feito em **HTML, CSS, JavaScript e jQuery**, com sprites e áudio locais.
 
-Projeto antigo de jogo para navegador, inspirado nos clássicos de plataforma. A implementação usa **HTML, CSS, JavaScript e jQuery**, com sprites, cenários e áudio local.
+> **Projeto de fã não oficial.** Personagens, músicas e artes associados a Mario pertencem aos respectivos titulares.
 
-O script `js/script.js` define rotinas de **movimentação horizontal, pulo, gravidade, animações e colisão simplificada com pisos**. É um experimento de mecânicas, não uma reprodução completa dos jogos oficiais.
+## ▶️ Jogar
 
-## Como testar
+**[Abrir o jogo no GitHub Pages](https://helioconde.github.io/Super-Mario-in-JavaScript-html/)**
+
+O GitHub Pages publica a branch `gh-pages`. Alterações propostas por pull request só serão publicadas quando forem mescladas nessa branch.
+
+## 🎮 Comandos (versão modernizada)
+
+| Ação | Controle |
+| --- | --- |
+| Andar | ← / → ou A / D |
+| Pular | Espaço, W ou ↑ |
+| Correr | Shift |
+| Pausar / continuar | P ou Esc |
+| Reiniciar | R |
+| Personalizar controles | Botão **Teclas** durante o jogo |
+
+Em dispositivos com tela sensível ao toque, aparecem botões de movimento, corrida e pulo.
+
+## 🛠️ Melhorias da revitalização
+
+- Atualização do movimento em um único ciclo `requestAnimationFrame`, com delta time limitado.
+- Gravidade e salto controlados por velocidade vertical.
+- Detecção de pouso nas superfícies dos pisos já presentes na fase.
+- Câmera horizontal acompanhando o personagem, sem intervalos acumulados.
+- Tela inicial com botão de início, conclusão ao chegar ao extremo da fase, botão de reinício e pausa.
+- HUD compacto com progresso e contagem de quedas.
+- Controles por toque e mapeamento persistente em `localStorage`.
+- Pausa automática quando a janela perde foco.
+- Remoção dos logs e timers redundantes de movimentação.
+
+## Executar localmente
 
 ```bash
 git clone https://github.com/HelioConde/Super-Mario-in-JavaScript-html.git
@@ -18,31 +43,10 @@ cd Super-Mario-in-JavaScript-html
 python -m http.server 8000
 ```
 
-Abra `http://localhost:8000`. O projeto não possui `package.json` e não depende de um servidor de jogo.
+Acesse `http://localhost:8000`.
 
-**A compatibilidade com navegadores e tamanhos de tela atuais não foi validada nesta revisão**. O código utiliza posicionamento de elementos DOM e detecção simples de objetos; colisões e desempenho podem variar.
+## Limitações e próximos passos
 
-## Organização
+A física implementa pouso em superfícies horizontais. Ainda faltam colisões laterais/teto, coleta de moedas, inimigos, checkpoints, sons dedicados a cada evento e fases estruturadas. O cenário histórico é composto por blocos posicionados diretamente no HTML; a evolução ideal será separar mapa, renderização e mecânicas em módulos. A versão precisa de teste visual e funcional em navegadores desktop e mobile antes de ser considerada estável.
 
-| Caminho | Conteúdo |
-| --- | --- |
-| `index.html` | Página inicial do protótipo |
-| `js/script.js` | Física simplificada, controles e animações |
-| `js/jquery.min.js` | Biblioteca histórica de interação |
-| `css/` | Estilos e disposição do cenário |
-| `img/` | Sprites e imagens |
-| `song/` | Recursos de áudio |
-| `index.md` | Documento histórico |
-
-## O que precisaria melhorar
-
-- Consolidar um loop único de atualização e movimento por tempo real decorrido.
-- Substituir a colisão baseada em `elementFromPoint` por uma camada de física consistente.
-- Tratar limites de tela, movimento contínuo, pausa e entrada por toque.
-- Criar testes básicos das regras de movimento antes de expandir fases.
-
-## Aviso legal
-
-**Projeto de aprendizado, não oficial.** Mario, suas imagens, músicas e demais recursos da franquia pertencem à Nintendo e aos respectivos titulares. O repositório não concede permissão para redistribuí-los comercialmente.
-
-Desenvolvido por [Hélio Conde](https://github.com/HelioConde).
+Feito por [Hélio Conde](https://github.com/HelioConde).
