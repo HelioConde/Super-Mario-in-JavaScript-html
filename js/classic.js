@@ -64,7 +64,35 @@ function collect(){
  platforms=[...document.querySelectorAll('[class*="piso"]')].filter(e=>/^piso\d/.test(e.className)).map(e=>{const r=e.getBoundingClientRect();return{x:r.left+scrollX,y:r.top+scrollY,w:r.width,h:r.height};}).filter(p=>p.w>0&&p.h>0);
  worldWidth=Math.max(12680,document.querySelector("#fase1")?.scrollWidth||12680);
 }
-function start(){collect();window.ClassicChallenges?.reset(platforms);const p=platforms.find(q=>q.x>60&&q.x<700)||platforms[0];x=p?p.x+10:130;y=p?p.y-H:Math.max(100,innerHeight*.55);vy=0;vx=0;onGround=!!p;started=true;paused=false;document.body.classList.add("classic-playing");intro.style.display="none";button.style.display="none";config.style.display="none";clock=0;last=performance.now();if(music){music.volume=.25;music.loop=true;music.play().catch(()=>{});}}
+function supportTerrain(){
+ const existing=document.querySelector("#classic-terrain-supports");existing?.remove();
+ const layer=document.createElement("div");layer.id="classic-terrain-supports";
+ layer.style.cssText="position:absolute;left:0;top:0;width:12680px;height:100%;pointer-events:none;z-index:1";
+ document.body.append(layer);
+ // Derive contiguous raised platforms from original DOM tiles; never modify source sprites.
+ const sorted=[...platforms].filter(p=>p.y<innerHeight*.77&&p.y>innerHeight*.25).sort((a,b)=>a.y-b.y||a.x-b.x);
+ const groups=[];
+ for(const p of sorted){
+  let g=groups.find(g=>Math.abs(g.y-p.y)<7&&p.x<=g.right+14&&p.x+p.w>=g.left-14);
+  if(g){g.left=Math.min(g.left,p.x);g.right=Math.max(g.right,p.x+p.w);g.bottom=Math.max(g.bottom,p.y+p.h);}
+  else groups.push({left:p.x,right:p.x+p.w,y:p.y,bottom:p.y+p.h});
+ }
+ const tileWidth=54;
+ for(const g of groups){
+  if(g.right-g.left<tileWidth*4)continue;
+  const columns=[g.left+tileWidth,g.right-tileWidth*2];
+  for(const cx of columns){
+   const below=platforms.filter(p=>p.y>=g.bottom+12&&p.x<=cx+tileWidth/2&&p.x+p.w>=cx+tileWidth/2).sort((a,b)=>a.y-b.y)[0];
+   if(!below||below.y-g.bottom>240)continue;
+   const gap=below.y-g.bottom;
+   if(gap<20)continue;
+   const support=document.createElement("div");support.className="classic-terrain-support";
+   support.style.cssText="position:absolute;left:"+cx+"px;top:"+g.bottom+"px;width:"+tileWidth+"px;height:"+gap+"px;background-image:url('./img/piso1.png');background-position:-62px -85px;background-size:300px auto;background-repeat:repeat-y;image-rendering:pixelated";
+   layer.append(support);
+  }
+ }
+}
+function start(){collect();supportTerrain();window.ClassicChallenges?.reset(platforms);const p=platforms.find(q=>q.x>60&&q.x<700)||platforms[0];x=p?p.x+10:130;y=p?p.y-H:Math.max(100,innerHeight*.55);vy=0;vx=0;onGround=!!p;started=true;paused=false;document.body.classList.add("classic-playing");intro.style.display="none";button.style.display="none";config.style.display="none";clock=0;last=performance.now();if(music){music.volume=.25;music.loop=true;music.play().catch(()=>{});}}
 button.addEventListener("click",start);function jump(){if(!started||paused||!onGround)return;vy=-540;onGround=false;jumpAudio?.play().catch(()=>{});}
 function save(){localStorage.setItem("marioClassicKeys",JSON.stringify(bindings));}
 for(const name of Object.keys(defaults)){const input=$(name);if(!input)continue;input.readOnly=true;input.value=bindings[name];input.title="Clique e pressione uma tecla";input.addEventListener("keydown",e=>{e.preventDefault();e.stopPropagation();if(e.code==="Escape")return;if(Object.entries(bindings).some(([k,v])=>k!==name&&v===e.code)){input.value="Em uso";return;}bindings[name]=e.code;input.value=e.code;save();pressed.clear();});}
