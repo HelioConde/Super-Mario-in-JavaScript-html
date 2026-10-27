@@ -129,3 +129,20 @@ test("classic world props respect supporting tiles",async({page})=>{
  expect(errors).toEqual([]);
  await page.screenshot({path:"artifacts/screenshots/classic-props-alignment.png",fullPage:false});
 });
+
+test("wide elevated earth formations receive visual supports without replacing original tiles",async({page})=>{
+ const errors=[];page.on("pageerror",error=>errors.push(error.message));
+ await page.setViewportSize({width:1366,height:768});await page.goto("/");
+ await page.locator(".classic-start").click();
+ await expect(page.locator("#classic-terrain-supports")).toBeAttached();
+ const result=await page.evaluate(()=>({
+  supports:document.querySelectorAll(".classic-terrain-support").length,
+  originalTiles:document.querySelectorAll('[class*="piso"]').length,
+  sprite:document.querySelector("#player").dataset.sprite
+ }));
+ expect(result.originalTiles).toBeGreaterThan(20);
+ expect(result.sprite).toBe("./img/mario.png");
+ expect(result.supports).toBeGreaterThan(0);
+ expect(errors).toEqual([]);
+ await page.screenshot({path:"artifacts/screenshots/classic-supported-terrain.png",fullPage:false});
+});
