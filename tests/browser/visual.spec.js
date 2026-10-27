@@ -106,3 +106,26 @@ test("classic sky and clean gameplay viewport",async({page})=>{
  await page.screenshot({path:"artifacts/screenshots/classic-sky-and-level.png",fullPage:false});
  expect(errors).toEqual([]);
 });
+
+test("classic world props respect supporting tiles",async({page})=>{
+ const errors=[];page.on("pageerror",error=>errors.push(error.message));
+ await page.setViewportSize({width:1366,height:768});
+ await page.goto("/");await page.locator(".classic-start").click();
+ await expect(page.locator("#classic-challenges .coin").first()).toBeVisible();
+ const report=await page.evaluate(()=>{
+   const tiles=[...document.querySelectorAll('[class*="piso"]')].filter(n=>/^piso\d/.test(n.className)).map(n=>n.getBoundingClientRect());
+   const inX=(r,x)=>x>=r.left+2&&x<=r.right-2;
+   return {coins:[...document.querySelectorAll("#classic-challenges .coin")].map(n=>{
+      const r=n.getBoundingClientRect(),under=tiles.filter(t=>inX(t,r.left+r.width/2)&&t.top>innerHeight*.34&&t.top<innerHeight*.99);
+      return {above:under.some(t=>r.bottom<=t.top+2),x:r.left};
+   }),pipes:[...document.querySelectorAll("#classic-challenges .pipe")].map(n=>{
+      const r=n.getBoundingClientRect(),under=tiles.filter(t=>inX(t,r.left+r.width/2)&&t.top>innerHeight*.34&&t.top<innerHeight*.99);
+      return {supported:under.some(t=>Math.abs(t.top-r.bottom)<=11),x:r.left};
+   })};
+ });
+ expect(report.coins.length).toBeGreaterThan(2);
+ expect(report.coins.filter(c=>!c.above)).toEqual([]);
+ expect(report.pipes.filter(p=>!p.supported)).toEqual([]);
+ expect(errors).toEqual([]);
+ await page.screenshot({path:"artifacts/screenshots/classic-props-alignment.png",fullPage:false});
+});
