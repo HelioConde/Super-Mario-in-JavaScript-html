@@ -3,6 +3,16 @@ const canvas=document.querySelector("#game"),ctx=canvas.getContext("2d");
 ctx.imageSmoothingEnabled=false;
 const $=q=>document.querySelector(q),T=32,W=canvas.width,H=canvas.height;
 const keys=new Set(),touch=new Set();
+const controlDefaults={left:"ArrowLeft",right:"ArrowRight",jump:"Space",run:"ShiftLeft",pause:"KeyP"};
+let controls={...controlDefaults};
+try { const saved=JSON.parse(localStorage.getItem("marioControlsV3")||"null");if(saved&&typeof saved==="object") for(const action of Object.keys(controlDefaults))if(typeof saved[action]==="string")controls[action]=saved[action]; } catch {}
+let settingsOpen=false;
+function pressed(action){return keys.has(controls[action])||touch.has(action)||
+ (action==="left"&&keys.has("KeyA"))||(action==="right"&&keys.has("KeyD"))||
+ (action==="jump"&&(keys.has("ArrowUp")||keys.has("KeyW")))||
+ (action==="run"&&keys.has("ShiftRight"));}
+function saveControls(){try{localStorage.setItem("marioControlsV3",JSON.stringify(controls));}catch{} keys.clear();touch.clear();}
+
 let index=0,level,coins=[],enemies=[],blocks=[],powerups=[],movers=[],checkpoint,goal,particles=[];
 let player,cam=0,lives=3,score=0,money=0,time=0,playing=false,paused=false,muted=false,last=0,anim=0,completed=0;
 let checkpointX=2*T,checkpointY=12*T,invulnerable=0,high=0;
@@ -68,14 +78,14 @@ function takeDamage(){
 function intersects(a,b){return a.x<b.x+(b.w||24)&&a.x+a.w>b.x&&a.y<b.y+(b.h||24)&&a.y+a.h>b.y;}
 function update(dt){
  time+=dt;anim+=dt;invulnerable=Math.max(0,invulnerable-dt);
- const left=keys.has("ArrowLeft")||keys.has("KeyA")||touch.has("left"),right=keys.has("ArrowRight")||keys.has("KeyD")||touch.has("right");
- const running=keys.has("ShiftLeft")||keys.has("ShiftRight")||touch.has("run"),dir=Number(right)-Number(left),speed=running?295:205;
+ const left=pressed("left"),right=pressed("right");
+ const running=pressed("run"),dir=Number(right)-Number(left),speed=running?295:205;
  const accel=player.grounded?1800:1120;
  if(dir){player.vx+=Math.sign(dir)*accel*dt;player.vx=Math.max(-speed,Math.min(speed,player.vx));player.face=dir;}
  else player.vx=Math.sign(player.vx)*Math.max(0,Math.abs(player.vx)-(player.grounded?2300:620)*dt);
  if(player.grounded){player.coyote=.09;}else player.coyote=Math.max(0,player.coyote-dt);
- if(player.jumpBuffer>0){player.jumpBuffer-=dt;if(player.coyote>0){player.vy=-520;player.grounded=false;player.coyote=0;player.jumpBuffer=0;sound(510,.09);}}
- const holding=keys.has("Space")||keys.has("ArrowUp")||keys.has("KeyW")||touch.has("jump");
+ if(player.jumpBuffer>0){player.jumpBuffer-=dt;if(player.coyote>0&&player.vy>=0){player.vy=-520;player.grounded=false;player.coyote=0;player.jumpBuffer=0;sound(510,.09);}}
+ const holding=pressed("jump");
  if(!holding&&player.vy< -180)player.vy=-180;
  player.vy=Math.min(820,player.vy+1350*dt);
  const oldY=player.y;
@@ -154,21 +164,48 @@ function show(title,description,button,callback){
  $("#options").hidden=false;
 }
 function finish(title,description,button,callback){persist();show(title,description,button,callback);}
-function resume(){playing=true;paused=false;$("#overlay").hidden=true;last=performance.now();$("#pause").textContent="Pausar";}
+function resume(){settingsOpen=false;playing=true;paused=false;$("#overlay").hidden=true;last=performance.now();$("#pause").textContent="Pausar";}
 function start(retain=false){rebuild(0,retain);resume();}
 function pause(){if(!playing)return;playing=false;paused=true;show("Jogo pausado","Pressione continuar ou P para voltar à aventura.","Continuar",resume);}
 $("#play").onclick=()=>start();
-$("#options").onclick=()=>show("Como jogar","Setas ou A/D movem. Espaço, W ou ↑ pula; segure para pular mais alto. Shift corre. P pausa, R reinicia. Recolha moedas e chegue à bandeira!","Voltar",()=>show("SUPER MARIO WEB","Três fases com moedas, inimigos, segredos e checkpoints.","Começar aventura",()=>start()));
+function openSettings(){
+ const wasPlaying=playing||paused;
+ playing=false;paused=wasPlaying;settingsOpen=true;keys.clear();touch.clear();
+ $("#overlay").hidden=false;$("#overlay-title").textContent="Configurar controles";
+ $("#overlay-description").textContent="Selecione uma ação e pressione a nova tecla. Mudanças aplicadas imediatamente, sem F5.";
+ const panel=document.createElement("div");panel.id="key-settings";
+ panel.style.cssText="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px auto;max-width:340px;text-align:left";
+ const labels={left:"Esquerda",right:"Direita",jump:"Pular",run:"Correr",pause:"Pausar"};
+ for(const [action,label] of Object.entries(labels)){
+ const name=document.createElement("span");name.textContent=label;name.style.alignSelf="center";
+ const btn=document.createElement("button");btn.textContent=controls[action];btn.type="button";
+ btn.addEventListener("click",()=>{btn.textContent="Pressione tecla…";btn.focus();const listener=e=>{
+ e.preventDefault();e.stopPropagation();
+ if(e.code==="Escape"){btn.textContent=controls[action];return;}
+ const other=Object.keys(controls).find(k=>k!==action&&controls[k]===e.code);
+ if(other){btn.textContent="Tecla em uso";setTimeout(()=>btn.textContent=controls[action],800);return;}
+ controls[action]=e.code;btn.textContent=e.code;saveControls();
+ };btn.addEventListener("keydown",listener,{once:true});});
+ panel.append(name,btn);
+ }
+ $("#overlay-description").after(panel);
+ $("#play").textContent="Salvar e voltar";
+ $("#play").onclick=()=>{panel.remove();settingsOpen=false;if(wasPlaying)resume();else show("SUPER MARIO WEB","Três fases com moedas, inimigos, segredos e checkpoints.","Começar aventura",()=>start());};
+ $("#options").hidden=true;
+}
+$("#options").onclick=()=>openSettings();
+/* instructions moved into the control dialog */
+/* $("#options").onclick=()=>show("Como jogar","Setas ou A/D movem. Espaço, W ou ↑ pula; segure para pular mais alto. Shift corre. P pausa, R reinicia. Recolha moedas e chegue à bandeira!","Voltar",()=>show("SUPER MARIO WEB","Três fases com moedas, inimigos, segredos e checkpoints.","Começar aventura",()=>start())); */
 $("#pause").onclick=()=>paused?resume():pause();
 $("#restart").onclick=()=>show("Reiniciar jogo?","O progresso desta partida será perdido.","Reiniciar",()=>start());
 $("#sound").onclick=()=>{muted=!muted;$("#sound").textContent=muted?"Som desligado":"Som ligado";$("#sound").setAttribute("aria-pressed",String(!muted));};
-const jump=()=>{if(player)player.jumpBuffer=.13;};
+const jump=()=>{if(player&&playing&&!paused&&player.jumpBuffer<=0)player.jumpBuffer=.12;};
 document.addEventListener("keydown",e=>{
- if(e.target.matches("button,input"))return;
- if(["ArrowLeft","ArrowRight","ArrowUp","Space"].includes(e.code))e.preventDefault();
- if(!e.repeat&&["Space","KeyW","ArrowUp"].includes(e.code))jump();
- if(e.code==="KeyP"||e.code==="Escape"){if(paused)resume();else pause();return;}
- if(e.code==="KeyR"){start();return;}
+ if(settingsOpen||e.target.matches("button,input"))return;
+ if(["ArrowLeft","ArrowRight","ArrowUp","Space",controls.left,controls.right,controls.jump].includes(e.code))e.preventDefault();
+ if(!e.repeat&&(e.code===controls.jump||e.code==="KeyW"||e.code==="ArrowUp"))jump();
+ if(!e.repeat&&(e.code===controls.pause||e.code==="Escape")){if(paused)resume();else pause();return;}
+ if(!e.repeat&&e.code==="KeyR"){start();return;}
  keys.add(e.code);
 });
 document.addEventListener("keyup",e=>keys.delete(e.code));
