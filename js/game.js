@@ -102,7 +102,7 @@ function update(dt){
  if(index===LEVELS.length-1){completed=LEVELS.length;persist();finish("Aventura concluída!","Você completou as três fases! Pontos: "+score+".","Jogar novamente",()=>start(false));}
  else{completed=Math.max(completed,index+1);persist();finish("Fase concluída!","Você desbloqueou "+LEVELS[index+1].name+". Pontos: "+score+".","Próxima fase",()=>{rebuild(index+1,true);resume();});}
  }
- if(player.y>H+100)takeDamage();
+ if(player.y>H+100){takeDamage();if(!playing)return;}
  for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=300*dt;p.life-=dt;}
  particles=particles.filter(p=>p.life>0);
  const target=Math.max(0,Math.min(level.tiles[0].length*T-W,player.x-W*.38));
@@ -148,7 +148,7 @@ function draw(){
  ctx.restore();
 }
 function show(title,description,button,callback){
- playing=false;paused=false;keys.clear();touch.clear();
+ playing=false;keys.clear();touch.clear();
  $("#overlay-title").textContent=title;$("#overlay-description").textContent=description;$("#play").textContent=button;
  $("#overlay").hidden=false;$("#play").onclick=()=>{callback();canvas.focus();};
  $("#options").hidden=false;
@@ -167,8 +167,8 @@ document.addEventListener("keydown",e=>{
  if(e.target.matches("button,input"))return;
  if(["ArrowLeft","ArrowRight","ArrowUp","Space"].includes(e.code))e.preventDefault();
  if(!e.repeat&&["Space","KeyW","ArrowUp"].includes(e.code))jump();
- if(e.code==="KeyP"||e.code==="Escape"){if(paused)resume();else pause();}
- if(e.code==="KeyR")start();
+ if(e.code==="KeyP"||e.code==="Escape"){if(paused)resume();else pause();return;}
+ if(e.code==="KeyR"){start();return;}
  keys.add(e.code);
 });
 document.addEventListener("keyup",e=>keys.delete(e.code));
