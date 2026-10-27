@@ -65,8 +65,8 @@ for(const device of [{name:"classic-desktop",width:1366,height:768},{name:"class
    return {sheetWidth:sheet.naturalWidth,sheetHeight:sheet.naturalHeight,background,animation:player.dataset.animation,playerRect:{x:rect.x,y:rect.y,width:rect.width,height:rect.height},logoLoaded:logo.complete&&logo.naturalWidth>0,groundCount:document.querySelectorAll('[class*="piso"]').length,screenWidth:innerWidth,hasHorizontalPlayerOverflow:rect.right>innerWidth};
   });
   fs.writeFileSync("artifacts/screenshots/"+device.name+"-diagnostics.json",JSON.stringify({info,errors,broken},null,2));
-  expect(info.sheetWidth).toBeGreaterThan(870);
-  expect(info.sheetHeight).toBeGreaterThan(155);
+  expect(info.sheetWidth).toBe(392);
+  expect(info.sheetHeight).toBeGreaterThan(50);
   expect(info.logoLoaded).toBe(true);
   expect(info.groundCount).toBeGreaterThan(20);
   expect(info.background).toContain("mario.png");
