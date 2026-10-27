@@ -57,7 +57,7 @@ function collect(){
  platforms=[...document.querySelectorAll('[class*="piso"]')].filter(e=>/^piso\d/.test(e.className)).map(e=>{const r=e.getBoundingClientRect();return{x:r.left+scrollX,y:r.top+scrollY,w:r.width,h:r.height};}).filter(p=>p.w>0&&p.h>0);
  worldWidth=Math.max(12680,document.querySelector("#fase1")?.scrollWidth||12680);
 }
-function start(){collect();const p=platforms.find(q=>q.x>60&&q.x<700)||platforms[0];x=p?p.x+10:130;y=p?p.y-H:Math.max(100,innerHeight*.55);vy=0;vx=0;onGround=!!p;started=true;paused=false;intro.style.display="none";button.style.display="none";config.style.display="none";clock=0;last=performance.now();if(music){music.volume=.25;music.loop=true;music.play().catch(()=>{});}}
+function start(){collect();window.ClassicChallenges?.reset(platforms);const p=platforms.find(q=>q.x>60&&q.x<700)||platforms[0];x=p?p.x+10:130;y=p?p.y-H:Math.max(100,innerHeight*.55);vy=0;vx=0;onGround=!!p;started=true;paused=false;intro.style.display="none";button.style.display="none";config.style.display="none";clock=0;last=performance.now();if(music){music.volume=.25;music.loop=true;music.play().catch(()=>{});}}
 button.addEventListener("click",start);function jump(){if(!started||paused||!onGround)return;vy=-540;onGround=false;jumpAudio?.play().catch(()=>{});}
 function save(){localStorage.setItem("marioClassicKeys",JSON.stringify(bindings));}
 for(const name of Object.keys(defaults)){const input=$(name);if(!input)continue;input.readOnly=true;input.value=bindings[name];input.title="Clique e pressione uma tecla";input.addEventListener("keydown",e=>{e.preventDefault();e.stopPropagation();if(e.code==="Escape")return;if(Object.entries(bindings).some(([k,v])=>k!==name&&v===e.code)){input.value="Em uso";return;}bindings[name]=e.code;input.value=e.code;save();pressed.clear();});}
@@ -84,9 +84,27 @@ touch.querySelectorAll("button").forEach(b=>{let k=b.dataset.key;const a=k==="le
 window.addEventListener("blur",()=>{pressed.clear();mobile.clear();if(started)paused=true;});
 function frame(now){const dt=Math.min(.03,(now-last)/1000||0);last=now;if(started&&!paused){
  const dir=Number(active("ArrowRight"))-Number(active("ArrowLeft"));vx=dir*(active("Run")?350:225);if(dir)look=dir;
- const oldBottom=y+H;x=Math.max(0,Math.min(worldWidth-W,x+vx*dt));vy=Math.min(950,vy+1450*dt);y+=vy*dt;onGround=false;
+ const oldX=x,oldBottom=y+H;
+ x=Math.max(0,Math.min(worldWidth-W,x+vx*dt));
+ vy=Math.min(950,vy+1450*dt);y+=vy*dt;onGround=false;
+ const challenge=window.ClassicChallenges?.update({x,y,w:W,h:H,vy,oldBottom},dt);
+ if(challenge?.blocking){
+  const pipe=challenge.blocking;
+  if(oldBottom<=pipe.y+12&&vy>=0){y=pipe.y-H;vy=0;onGround=true;}
+  else if(oldX+W<=pipe.x+8){x=pipe.x-W;vx=0;}
+  else if(oldX>=pipe.x+pipe.w-8){x=pipe.x+pipe.w;vx=0;}
+  else if(vy<0){y=pipe.y+pipe.h;vy=0;}
+ }
+ if(challenge?.stomped){vy=-330;onGround=false;}
+ if(challenge?.damaged){
+  x=Math.max(80,challenge.checkpoint||100);y=100;vy=0;
+ }
+ if(challenge?.gameOver){
+  paused=true;alert("Fim de jogo! Aperte Jogar para tentar novamente.");
+  start();return;
+ }
  for(const p of platforms){if(x+W<=p.x+3||x>=p.x+p.w-3)continue;if(vy>=0&&oldBottom<=p.y+10&&y+H>=p.y){y=p.y-H;vy=0;onGround=true;break;}}
- if(y>innerHeight+250){const p=platforms.find(q=>q.x>=0&&q.x<700)||platforms[0];x=p?p.x+10:100;y=p?p.y-H:150;vy=0;}
+ if(y>innerHeight+250){const checkpoint=window.ClassicChallenges?.getCheckpoint()||100;const p=platforms.find(q=>checkpoint>=q.x&&checkpoint<=q.x+q.w)||platforms[0];x=checkpoint;y=p?p.y-H:150;vy=0;}
  clock+=dt;
  const desired=Math.max(0,Math.min(worldWidth-innerWidth,x-innerWidth*.4));camera+=(desired-camera)*Math.min(1,dt*8);window.scrollTo({left:camera,top:0,behavior:"instant"});
  player.style.left=x+"px";player.style.top=y+"px";player.style.transform=look<0?"scaleX(-1)":"none";
