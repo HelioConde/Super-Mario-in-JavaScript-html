@@ -29,17 +29,21 @@ document.head.append(style);
 let floor=[],entities=[],hud=document.createElement("div"),hits=0,score=0,coinCount=0,checkpoint=0,invulnerable=0;
 hud.className="classic-level-hud";hud.textContent="🍄 Fase 1  ·  🪙 0  ·  ⭐ 0";document.body.append(hud);
 const make=(cls,x,y,extra={})=>{const node=document.createElement("div");node.className=cls;node.style.left=x+"px";node.style.top=y+"px";for(const [k,v] of Object.entries(extra))node.style.setProperty(k,v);el.append(node);return node;};
-function surface(x){
- const candidates=floor.filter(p=>x>=p.x-6&&x<=p.x+p.w+6).map(p=>p.y);
+function surface(x,{upper=false}={}){
+ const candidates=floor.filter(p=>x>=p.x+2&&x<=p.x+p.w-2&&p.y>innerHeight*.34&&p.y<innerHeight*.99).map(p=>p.y);
  if(!candidates.length)return null;
- const low=candidates.filter(y=>y>innerHeight*.45&&y<innerHeight*.98);
- return Math.max(...(low.length?low:candidates));
+ // Airborne platforms take priority for coins and pipes; lower floor for enemies.
+ return upper?Math.min(...candidates):Math.max(...candidates);
+}
+function supportsWidth(x,width,height){
+ const left=surface(x+8,{upper:true}),right=surface(x+width-8,{upper:true});
+ return left!==null&&right!==null&&Math.abs(left-right)<=10&&Math.abs(left-height)<=10;
 }
 function reset(platforms){
  floor=platforms;el.replaceChildren();entities=[];score=0;hits=0;coinCount=0;checkpoint=0;invulnerable=0;
  for(const [stageIndex,stage] of stages.entries()){
   for(const [i,x] of stage.pipes.entries()){
-   const ground=surface(x+25);if(ground===null)continue;
+   const ground=surface(x+32,{upper:true});if(ground===null||!supportsWidth(x,64,ground))continue;
    const h=65+(i%3)*24,y=ground-h;
    const node=make("pipe",x,y,{"--pipe-h":h+"px"});
    entities.push({type:"pipe",x,y,w:64,h,node});
@@ -50,13 +54,16 @@ function reset(platforms){
    entities.push({type:"enemy",x,y,w:37,h:37,start:x,dir:i%2?-1:1,alive:true,node,limit:70+stageIndex*14});
   }
   for(const x of stage.coins){
-   const ground=surface(x);if(ground===null)continue;
-   const y=ground-104,node=make("coin",x,y);
+   const ground=surface(x+9,{upper:true});if(ground===null)continue;
+   const y=ground-58;
+   // Avoid burying rewards in pipes or placing them inside other scenery.
+   if(entities.some(e=>e.type==="pipe"&&x+19>e.x-8&&x<e.x+e.w+8&&y+25>e.y-8))continue;
+   const node=make("coin",x,y);
    entities.push({type:"coin",x,y,w:19,h:25,alive:true,node});
   }
  }
  for(const x of [2900,6400,10100]){
-  const ground=surface(x);if(ground===null)continue;
+  const ground=surface(x,{upper:true});if(ground===null)continue;
   const node=make("checkpoint",x,ground-80);
   entities.push({type:"checkpoint",x,y:ground-80,w:16,h:80,node,active:false});
  }
@@ -70,8 +77,12 @@ function update(player,dt){
  let damaged=false,stomped=false,blocking=null;
  for(const e of entities){
   if(e.type==="enemy"&&e.alive){
-   e.x+=e.dir*(42+Math.min(30,Math.floor(player.x/3000)*8))*dt;
-   if(Math.abs(e.x-e.start)>e.limit)e.dir*=-1;
+   const next=e.x+e.dir*(42+Math.min(30,Math.floor(player.x/3000)*8))*dt;
+   const nextGround=surface(next+18);
+   if(Math.abs(next-e.start)>e.limit||nextGround===null||Math.abs(nextGround-(e.y+e.h))>12||
+      entities.some(pipe=>pipe.type==="pipe"&&next<pipe.x+pipe.w&&next+e.w>pipe.x&&e.y+e.h>pipe.y)){
+     e.dir*=-1;
+   }else e.x=next;
    e.node.style.left=e.x+"px";
    if(collide(player,e)){
     if(player.vy>80&&player.oldBottom<=e.y+14){e.alive=false;e.node.remove();score+=200;stomped=true;}
