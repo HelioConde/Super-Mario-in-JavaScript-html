@@ -5,6 +5,10 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "check": "node --check js/game.js && node --check js/levels.js && npm test"
+    "check": "node --check js/game.js && node --check js/levels.js && npm test",
+    "test:visual": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
   }
 }

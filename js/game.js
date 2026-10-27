@@ -162,6 +162,7 @@ function show(title,description,button,callback){
  $("#overlay-title").textContent=title;$("#overlay-description").textContent=description;$("#play").textContent=button;
  $("#overlay").hidden=false;$("#play").onclick=()=>{callback();canvas.focus();};
  $("#options").hidden=false;
+ $("#key-settings")?.remove();
 }
 function finish(title,description,button,callback){persist();show(title,description,button,callback);}
 function resume(){settingsOpen=false;playing=true;paused=false;$("#overlay").hidden=true;last=performance.now();$("#pause").textContent="Pausar";}
@@ -169,6 +170,7 @@ function start(retain=false){rebuild(0,retain);resume();}
 function pause(){if(!playing)return;playing=false;paused=true;show("Jogo pausado","Pressione continuar ou P para voltar à aventura.","Continuar",resume);}
 $("#play").onclick=()=>start();
 function openSettings(){
+ $("#key-settings")?.remove();
  const wasPlaying=playing||paused;
  playing=false;paused=wasPlaying;settingsOpen=true;keys.clear();touch.clear();
  $("#overlay").hidden=false;$("#overlay-title").textContent="Configurar controles";
@@ -194,10 +196,23 @@ function openSettings(){
  $("#options").hidden=true;
 }
 $("#options").onclick=()=>openSettings();
-/* instructions moved into the control dialog */
-/* $("#options").onclick=()=>show("Como jogar","Setas ou A/D movem. Espaço, W ou ↑ pula; segure para pular mais alto. Shift corre. P pausa, R reinicia. Recolha moedas e chegue à bandeira!","Voltar",()=>show("SUPER MARIO WEB","Três fases com moedas, inimigos, segredos e checkpoints.","Começar aventura",()=>start())); */
+
 $("#pause").onclick=()=>paused?resume():pause();
 $("#restart").onclick=()=>show("Reiniciar jogo?","O progresso desta partida será perdido.","Reiniciar",()=>start());
+$("#screenshot").onclick=()=>{
+ try{
+ const photo=document.createElement("canvas");photo.width=W;photo.height=H+62;
+ const context=photo.getContext("2d");context.fillStyle="#111b31";context.fillRect(0,0,W,62);
+ context.font="bold 24px system-ui";context.fillStyle="#fff";
+ context.fillText("MARIO WEB  |  FASE "+(index+1),20,39);
+ context.font="bold 19px system-ui";
+ context.fillText("Pontos: "+score+"   Moedas: "+money+"   Vidas: "+lives,430,39);
+ context.drawImage(canvas,0,62);
+ const link=document.createElement("a");link.href=photo.toDataURL("image/png");
+ link.download="mario-web-fase-"+(index+1)+"-"+new Date().toISOString().slice(0,10)+".png";
+ document.body.append(link);link.click();link.remove();
+ }catch(error){console.error("Não foi possível salvar a captura",error);alert("Não foi possível salvar a imagem neste navegador.");}
+};
 $("#sound").onclick=()=>{muted=!muted;$("#sound").textContent=muted?"Som desligado":"Som ligado";$("#sound").setAttribute("aria-pressed",String(!muted));};
 const jump=()=>{if(player&&playing&&!paused&&player.jumpBuffer<=0)player.jumpBuffer=.12;};
 document.addEventListener("keydown",e=>{
