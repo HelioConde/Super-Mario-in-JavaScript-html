@@ -28,9 +28,10 @@ let floor=[],entities=[],hud=document.createElement("div"),hits=0,score=0,coinCo
 hud.className="classic-level-hud";hud.textContent="🍄 Fase 1  ·  🪙 0  ·  ⭐ 0";document.body.append(hud);
 const make=(cls,x,y,extra={})=>{const node=document.createElement("div");node.className=cls;node.style.left=x+"px";node.style.top=y+"px";for(const [k,v] of Object.entries(extra))node.style.setProperty(k,v);el.append(node);return node;};
 function surface(x){
- let best=Infinity;
- for(const p of floor){if(x>=p.x-6&&x<=p.x+p.w+6&&p.y<best)best=p.y;}
- return Number.isFinite(best)?best:null;
+ const candidates=floor.filter(p=>x>=p.x-6&&x<=p.x+p.w+6).map(p=>p.y);
+ if(!candidates.length)return null;
+ const low=candidates.filter(y=>y>innerHeight*.45&&y<innerHeight*.98);
+ return Math.min(...(low.length?low:candidates));
 }
 function reset(platforms){
  floor=platforms;el.replaceChildren();entities=[];score=0;hits=0;coinCount=0;checkpoint=0;invulnerable=0;
