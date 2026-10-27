@@ -2,6 +2,11 @@ import {LEVELS} from "./levels.js";
 const canvas=document.querySelector("#game"),ctx=canvas.getContext("2d");
 ctx.imageSmoothingEnabled=false;
 const $=q=>document.querySelector(q),T=32,W=canvas.width,H=canvas.height;
+const assets={};
+for(const [name,url] of Object.entries({background:"./img/bg1.jpg",mario:"./img/mario.png",ground:"./img/piso1.png",enemies:"./img/enemies.png"})){
+ const img=new Image();img.src=url;assets[name]=img;
+}
+const ready=name=>assets[name]?.complete&&assets[name]?.naturalWidth>0;
 const keys=new Set(),touch=new Set();
 const controlDefaults={left:"ArrowLeft",right:"ArrowRight",jump:"Space",run:"ShiftLeft",pause:"KeyP"};
 let controls={...controlDefaults};
@@ -132,10 +137,22 @@ function rect(color,x,y,w,h){ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math
 function draw(){
  const [sky,light,hill]=themes[level.theme];ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
  rect(light,0,H-210,W,210);
+ if(ready("background")){
+ const image=assets.background;
+ const unit= Math.max(1,Math.round(image.width*H/image.height));
+ const offset=((cam*.2)%unit+unit)%unit;
+ for(let xx=-offset;xx<W;xx+=unit)ctx.drawImage(image,xx,0,unit,H);
+ } else {
  for(let i=-1;i<12;i++){let x=i*125-(cam*.22%125);ctx.fillStyle=hill;ctx.beginPath();ctx.arc(x,H-70,120,Math.PI,0);ctx.fill();}
+ }
  ctx.save();ctx.translate(-Math.round(cam),0);
  const first=Math.max(0,Math.floor(cam/T)-1),end=Math.min(level.tiles[0].length,Math.ceil((cam+W)/T)+1);
- for(let y=0;y<level.tiles.length;y++)for(let x=first;x<end;x++){const c=tile(x,y);if(c==="#"){rect("#845536",x*T,y*T,T,T);rect("#70b352",x*T,y*T,T,6);rect("#573a2a",x*T+3,y*T+9,T-6,3);}
+ for(let y=0;y<level.tiles.length;y++)for(let x=first;x<end;x++){const c=tile(x,y);if(c==="#"){
+ if(ready("ground")){
+ const top=tile(x,y-1)!=="#";
+ ctx.drawImage(assets.ground,top?62:62,top?0:85,54,82,x*T,y*T,T,T);
+ }else{rect("#845536",x*T,y*T,T,T);rect("#70b352",x*T,y*T,T,6);}
+ }
  else if(c==="?"||c==="B"){rect(c==="?"?"#f6b842":"#b9693b",x*T+1,y*T+1,T-2,T-2);rect("#fff1a7",x*T+5,y*T+5,6,5);if(c==="?"){ctx.fillStyle="#553c14";ctx.font="bold 23px system-ui";ctx.fillText("?",x*T+9,y*T+25);}}
  }
  for(const c of coins)if(c.active){const wobble=Math.sin(anim*8+c.x)*3;rect("#ffcf32",c.x-8+wobble,c.y-11,16,22);rect("#fff6a7",c.x-2+wobble,c.y-8,4,12);}
@@ -149,10 +166,18 @@ function draw(){
  ctx.save();ctx.translate(player.x+player.w/2,player.y);ctx.scale(player.face,1);
  const step=player.grounded&&Math.abs(player.vx)>20?Math.sin(anim*15)*3:0;
  const offset=player.big?-8:0;
+ if(ready("mario")){
+ const sprite=assets.mario;
+ // Original Mario World sprite sheet coordinates from the historic prototype.
+ const walking=player.grounded&&Math.abs(player.vx)>25&&Math.floor(anim*8)%2===1;
+ const sx=walking?836:532,sy=player.grounded?0:99;
+ ctx.drawImage(sprite,sx,sy,Math.min(35,sprite.width-sx),Math.min(51,sprite.height-sy),-player.w/2,offset,player.w,player.h);
+ }else{
  rect("#df3937",-11,offset+2,22,10);rect("#ffcb98",-8,offset+12,16,12);
  rect("#d83433",-12,offset+24,24,6);rect("#396cc9",-9,offset+28,18,player.h-30+Math.abs(step));
  rect("#482c24",-12,offset+player.h-6+step,10,6);rect("#482c24",2,offset+player.h-6-step,10,6);
  rect("#fff",player.face===1?2:-7,offset+15,4,5);
+ }
  if(player.shield){ctx.strokeStyle="#b3ffdf";ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,player.h/2,27,0,Math.PI*2);ctx.stroke();}
  ctx.restore();}
  ctx.restore();
