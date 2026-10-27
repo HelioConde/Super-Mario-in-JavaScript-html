@@ -15,7 +15,9 @@ const style=document.createElement("style");
 style.textContent=`
 #classic-challenges .pipe{position:absolute;width:64px;height:var(--pipe-h);background:linear-gradient(90deg,#087d27 0 10%,#55e870 22%,#189c37 55%,#056923 95%);border:3px solid #075d23;border-top:0;box-sizing:border-box}
 #classic-challenges .pipe::before{content:"";position:absolute;left:-8px;top:0;width:74px;height:18px;background:linear-gradient(90deg,#087d27,#7bf596 28%,#20b23e 70%,#076322);border:3px solid #075d23;box-sizing:border-box;border-radius:3px}
-#classic-challenges .enemy{position:absolute;width:37px;height:37px;background-image:url("./img/enemies.png");background-repeat:no-repeat;background-size:auto 92px;background-position:0 0;image-rendering:pixelated;filter:drop-shadow(0 2px 1px #0008)}
+#classic-challenges .enemy{position:absolute;width:37px;height:37px;box-sizing:border-box;border-radius:47% 47% 18% 18%;background:#ad572c;border:3px solid #613219;box-shadow:inset 0 -8px #d7a16e,0 3px 1px #0008;image-rendering:pixelated}
+#classic-challenges .enemy::before{content:"";position:absolute;top:10px;left:8px;width:5px;height:12px;background:#fff;border-right:2px solid #24201d;box-shadow:11px 0 #fff,13px 0 #24201d}
+#classic-challenges .enemy::after{content:"";position:absolute;bottom:-4px;left:0;width:12px;height:7px;background:#59301c;box-shadow:17px 0 #59301c}
 #classic-challenges .coin{position:absolute;width:19px;height:25px;border-radius:45%;background:linear-gradient(90deg,#c27804,#fff59b 40%,#f5b71b 75%);border:3px solid #f0a408;box-shadow:inset 0 0 0 2px #ffe773;animation:classic-coin .8s ease-in-out infinite alternate}
 #classic-challenges .checkpoint{position:absolute;width:5px;height:80px;background:#e4eefb}
 #classic-challenges .checkpoint::before{content:"";position:absolute;left:5px;top:0;width:34px;height:22px;background:#ffd747;clip-path:polygon(0 0,100% 50%,0 100%)}
@@ -31,7 +33,7 @@ function surface(x){
  const candidates=floor.filter(p=>x>=p.x-6&&x<=p.x+p.w+6).map(p=>p.y);
  if(!candidates.length)return null;
  const low=candidates.filter(y=>y>innerHeight*.45&&y<innerHeight*.98);
- return Math.min(...(low.length?low:candidates));
+ return Math.max(...(low.length?low:candidates));
 }
 function reset(platforms){
  floor=platforms;el.replaceChildren();entities=[];score=0;hits=0;coinCount=0;checkpoint=0;invulnerable=0;

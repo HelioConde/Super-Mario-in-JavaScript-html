@@ -38,7 +38,14 @@ styles.textContent=`
   #logo2 #config{display:none!important}
   .classic-start{position:fixed;z-index:110;top:68%;left:50%;transform:translateX(-50%);padding:12px 24px;border:3px solid white;border-radius:12px;background:#f6cd45;font:bold 18px system-ui;cursor:pointer}
   #home{background:rgba(0,0,0,.68)!important;z-index:90!important}
-  #backgrounds{pointer-events:none}
+  body{background:#79d2ed url("./img/bg1.jpg") center center / auto 100vh repeat-x fixed!important;min-height:100vh}
+  #backgrounds{pointer-events:none;position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;background-image:url("./img/bg1.jpg")!important;background-size:auto 100%!important;background-repeat:repeat-x!important;z-index:0!important}
+  #fase1{z-index:2!important}
+  #logo2{pointer-events:none}
+  body.classic-playing #logo2{display:none!important}
+  body.classic-playing #logo1{display:none!important}
+  body.classic-playing #backgrounds{display:block!important}
+
   #fase1{pointer-events:none}
   .classic-touch{display:none;position:fixed;bottom:15px;left:12px;right:12px;z-index:80;justify-content:space-between;pointer-events:none}
   .classic-touch>div{display:flex;gap:9px}.classic-touch button{pointer-events:auto;touch-action:none;border:2px solid #fff9;border-radius:15px;background:#203c6acb;color:white;width:62px;height:62px;font:bold 24px system-ui}
@@ -57,7 +64,7 @@ function collect(){
  platforms=[...document.querySelectorAll('[class*="piso"]')].filter(e=>/^piso\d/.test(e.className)).map(e=>{const r=e.getBoundingClientRect();return{x:r.left+scrollX,y:r.top+scrollY,w:r.width,h:r.height};}).filter(p=>p.w>0&&p.h>0);
  worldWidth=Math.max(12680,document.querySelector("#fase1")?.scrollWidth||12680);
 }
-function start(){collect();window.ClassicChallenges?.reset(platforms);const p=platforms.find(q=>q.x>60&&q.x<700)||platforms[0];x=p?p.x+10:130;y=p?p.y-H:Math.max(100,innerHeight*.55);vy=0;vx=0;onGround=!!p;started=true;paused=false;intro.style.display="none";button.style.display="none";config.style.display="none";clock=0;last=performance.now();if(music){music.volume=.25;music.loop=true;music.play().catch(()=>{});}}
+function start(){collect();window.ClassicChallenges?.reset(platforms);const p=platforms.find(q=>q.x>60&&q.x<700)||platforms[0];x=p?p.x+10:130;y=p?p.y-H:Math.max(100,innerHeight*.55);vy=0;vx=0;onGround=!!p;started=true;paused=false;document.body.classList.add("classic-playing");intro.style.display="none";button.style.display="none";config.style.display="none";clock=0;last=performance.now();if(music){music.volume=.25;music.loop=true;music.play().catch(()=>{});}}
 button.addEventListener("click",start);function jump(){if(!started||paused||!onGround)return;vy=-540;onGround=false;jumpAudio?.play().catch(()=>{});}
 function save(){localStorage.setItem("marioClassicKeys",JSON.stringify(bindings));}
 for(const name of Object.keys(defaults)){const input=$(name);if(!input)continue;input.readOnly=true;input.value=bindings[name];input.title="Clique e pressione uma tecla";input.addEventListener("keydown",e=>{e.preventDefault();e.stopPropagation();if(e.code==="Escape")return;if(Object.entries(bindings).some(([k,v])=>k!==name&&v===e.code)){input.value="Em uso";return;}bindings[name]=e.code;input.value=e.code;save();pressed.clear();});}

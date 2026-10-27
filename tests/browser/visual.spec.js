@@ -93,3 +93,16 @@ test("classic level has pipes, monsters and collectible rewards",async({page})=>
  fs.writeFileSync("artifacts/screenshots/classic-challenges-audit.json",JSON.stringify({values,errors},null,2));
  expect(errors).toEqual([]);
 });
+
+test("classic sky and clean gameplay viewport",async({page})=>{
+ await page.setViewportSize({width:1366,height:768});
+ const errors=[];page.on("pageerror",e=>errors.push(e.message));
+ await page.goto("/");await page.locator(".classic-start").click();
+ await expect(page.locator("body")).toHaveClass(/classic-playing/);
+ await expect(page.locator("#logo2")).toBeHidden();
+ await expect(page.locator("#player")).toHaveAttribute("data-sprite","./img/mario.png");
+ const background=await page.locator("body").evaluate(el=>getComputedStyle(el).backgroundImage);
+ expect(background).toContain("bg1.jpg");
+ await page.screenshot({path:"artifacts/screenshots/classic-sky-and-level.png",fullPage:false});
+ expect(errors).toEqual([]);
+});
