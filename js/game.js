@@ -22,8 +22,8 @@ function solid(x,y){return tile(x,y)==="#"||tile(x,y)==="?"||tile(x,y)==="B";}
 function collides(x,y,w,h){const left=Math.floor(x/T),right=Math.floor((x+w-.01)/T),top=Math.floor(y/T),bottom=Math.floor((y+h-.01)/T);
  for(let ty=top;ty<=bottom;ty++)for(let tx=left;tx<=right;tx++)if(solid(tx,ty))return {x:tx,y:ty};return null;}
 function rebuild(n,retain=false){
- index=n;level=LEVELS[n];coins=[];enemies=[];blocks=[];powerups=[];movers=[];particles=[];time=0;cam=0;
- level.tiles=level.tiles.map(r=>r.split(""));
+ index=n;level={...LEVELS[n],tiles:LEVELS[n].tiles.map(row=>row.split(""))};coins=[];enemies=[];blocks=[];powerups=[];movers=[];particles=[];time=0;cam=0;
+
  for(let y=0;y<level.tiles.length;y++)for(let x=0;x<level.tiles[y].length;x++){
   const c=tile(x,y);
   if(c==="C"){coins.push({x:x*T+T/2,y:y*T+T/2,active:true});level.tiles[y][x]=".";}
