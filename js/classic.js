@@ -9,10 +9,25 @@ const pressed=new Set();
 let started=false,paused=false,vy=0,vx=0,onGround=false,look=1,clock=0,last=0,camera=0,platforms=[],worldWidth=12680;
 let x=120,y=110,groundY=0;const W=35,H=51;
 const music=$("thema"),jumpAudio=$("jump");
+const originalSprite="./img/mario.png";
+const frameStyle={idle:{x:532,y:0,w:35,h:51},walk:{x:836,y:0,w:38,h:48},jump:{x:532,y:99,w:38,h:56}};
+const spriteImage=new Image();spriteImage.src=originalSprite;
+let spriteAvailable=false;
+spriteImage.onload=()=>{spriteAvailable=true;player.dataset.spriteStatus="ready";};
+spriteImage.onerror=()=>{player.dataset.spriteStatus="error";console.error("Falha ao carregar sprites originais:",originalSprite);};
+function applySprite(frame){
+ const f=frameStyle[frame]||frameStyle.idle;
+ player.style.backgroundImage='url("'+originalSprite+'")';
+ player.style.backgroundSize="1000px auto";
+ player.style.backgroundRepeat="no-repeat";
+ player.style.backgroundPosition="-"+f.x+"px -"+f.y+"px";
+ player.style.width=f.w+"px";player.style.height=f.h+"px";
+ player.dataset.animation=frame;player.dataset.sprite=originalSprite;
+}
 const styles=document.createElement("style");
 styles.textContent=`
   .table,.piso1X,.piso1O,.piso1Y,.piso2X,.piso2O,.piso2Y,.piso3X,.piso3O1,.piso3O2,.piso3Y{border:0!important}
-  #player{border:0!important;pointer-events:none}
+  #player{border:0!important;pointer-events:none;background-image:url("./img/mario.png")!important;background-size:1000px auto!important;image-rendering:pixelated;transform-origin:center bottom}
   #keyConfig{z-index:150!important;position:fixed!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%);width:min(90vw,410px)!important;height:auto!important;max-height:85vh;overflow:auto;padding:24px!important;background:#f8fafc!important;border:4px solid #243c73;box-shadow:0 15px 60px #0008;font:15px system-ui!important;border-radius:12px}
   #keyConfig>div:nth-child(odd){margin-top:5px;font-weight:650}#keyConfig input{padding:5px;text-align:center}
   #keyConfig button,.classic-actions button{padding:8px 12px;border:2px solid #fff;border-radius:8px;background:#fbc548;color:#222;font-weight:bold;cursor:pointer}
@@ -74,9 +89,11 @@ function frame(now){const dt=Math.min(.03,(now-last)/1000||0);last=now;if(starte
  if(y>innerHeight+250){const p=platforms.find(q=>q.x>=0&&q.x<700)||platforms[0];x=p?p.x+10:100;y=p?p.y-H:150;vy=0;}
  clock+=dt;
  const desired=Math.max(0,Math.min(worldWidth-innerWidth,x-innerWidth*.4));camera+=(desired-camera)*Math.min(1,dt*8);window.scrollTo({left:camera,top:0,behavior:"instant"});
- player.style.left=x+"px";player.style.top=y+"px";player.style.transform=look<0?"scaleX(-1)":"none";player.style.backgroundPosition=!onGround?"-532px -99px":Math.abs(vx)>10&&Math.floor(clock*8)%2?"-836px 0px":"-532px 0px";
+ player.style.left=x+"px";player.style.top=y+"px";player.style.transform=look<0?"scaleX(-1)":"none";
+ applySprite(!onGround?"jump":Math.abs(vx)>10&&Math.floor(clock*8)%2?"walk":"idle");
  }
  requestAnimationFrame(frame);}
+applySprite("idle");
 logo.style.display="block";$("pressMsg").textContent="Pressione Espaço ou clique em Jogar";
 requestAnimationFrame(frame);
 })();
