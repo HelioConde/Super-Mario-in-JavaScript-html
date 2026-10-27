@@ -79,3 +79,17 @@ for(const device of [{name:"classic-desktop",width:1366,height:768},{name:"class
   await page.screenshot({path:"artifacts/screenshots/"+device.name+"-jump.png",fullPage:false});
  });
 }
+
+test("classic level has pipes, monsters and collectible rewards",async({page})=>{
+ const errors=[];page.on("pageerror",e=>errors.push(e.message));
+ await page.setViewportSize({width:1366,height:768});
+ await page.goto("/");await page.locator(".classic-start").click();
+ await expect.poll(()=>page.locator("#classic-challenges .pipe").count()).toBeGreaterThan(2);
+ await expect.poll(()=>page.locator("#classic-challenges .enemy").count()).toBeGreaterThan(2);
+ await expect.poll(()=>page.locator("#classic-challenges .coin").count()).toBeGreaterThan(2);
+ await expect(page.locator("#player")).toHaveAttribute("data-sprite","./img/mario.png");
+ await page.screenshot({path:"artifacts/screenshots/classic-challenges-start.png",fullPage:false});
+ const values=await page.evaluate(()=>({pipes:document.querySelectorAll(".pipe").length,enemies:document.querySelectorAll(".enemy").length,coins:document.querySelectorAll(".coin").length,src:document.querySelector("#player").dataset.sprite}));
+ fs.writeFileSync("artifacts/screenshots/classic-challenges-audit.json",JSON.stringify({values,errors},null,2));
+ expect(errors).toEqual([]);
+});
