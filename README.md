@@ -1,52 +1,56 @@
-# 🍄 Super Mario — Plataforma Web
+# 🍄 Super Mario Web — Plataforma em JavaScript
 
-Protótipo de jogo de plataforma para navegador, inspirado nos clássicos da Nintendo. Projeto de estudo feito em **HTML, CSS, JavaScript e jQuery**, com sprites e áudio locais.
+Experimento de plataforma feito com HTML, CSS e JavaScript puro. **Fan game não oficial**: Mario, imagens e músicas da franquia pertencem aos titulares dos direitos.
 
-> **Projeto de fã não oficial.** Personagens, músicas e artes associados a Mario pertencem aos respectivos titulares.
+## Jogar
 
-## ▶️ Jogar
+**[GitHub Pages](https://helioconde.github.io/Super-Mario-in-JavaScript-html/)**
 
-**[Abrir o jogo no GitHub Pages](https://helioconde.github.io/Super-Mario-in-JavaScript-html/)**
+> A versão 2 está sendo desenvolvida na branch `improve/platformer-core-2026`. O GitHub Pages só mostrará esta versão depois do merge em `gh-pages`.
 
-O GitHub Pages publica a branch `gh-pages`. Alterações propostas por pull request só serão publicadas quando forem mescladas nessa branch.
+## Funcionalidades da versão 2
 
-## 🎮 Comandos (versão modernizada)
+- Três fases com cenários, obstáculos e dificuldades diferentes.
+- Física com aceleração, desaceleração, gravidade, pulo variável, colisões com teto/paredes/chão e plataformas móveis.
+- Moedas, pontuação, blocos surpresa e quebráveis, inimigos, checkpoints e bandeiras de conclusão.
+- Três vidas, dano, período de invulnerabilidade e proteção colecionável.
+- Menus, HUD, pausa, reinício, recordes e desbloqueio persistidos no navegador.
+- Teclas e controles sensíveis ao toque.
+- Sem bibliotecas de runtime: HTML Canvas 2D e módulos ES.
 
-| Ação | Controle |
-| --- | --- |
-| Andar | ← / → ou A / D |
-| Pular | Espaço, W ou ↑ |
-| Correr | Shift |
-| Pausar / continuar | P ou Esc |
-| Reiniciar | R |
-| Personalizar controles | Botão **Teclas** durante o jogo |
+## Controles
 
-Em dispositivos com tela sensível ao toque, aparecem botões de movimento, corrida e pulo.
+| Ação | Teclado | Toque |
+|---|---|---|
+| Mover | ← → ou A D | ◀ ▶ |
+| Pular | Espaço, W ou ↑ | ▲ |
+| Correr | Shift | ⚡ |
+| Pausar | P ou Esc | botão Pausar |
+| Reiniciar | R | botão Reiniciar |
 
-## 🛠️ Melhorias da revitalização
-
-- Atualização do movimento em um único ciclo `requestAnimationFrame`, com delta time limitado.
-- Gravidade e salto controlados por velocidade vertical.
-- Detecção de pouso nas superfícies dos pisos já presentes na fase.
-- Câmera horizontal acompanhando o personagem, sem intervalos acumulados.
-- Tela inicial com botão de início, conclusão ao chegar ao extremo da fase, botão de reinício e pausa.
-- HUD compacto com progresso e contagem de quedas.
-- Controles por toque e mapeamento persistente em `localStorage`.
-- Pausa automática quando a janela perde foco.
-- Remoção dos logs e timers redundantes de movimentação.
-
-## Executar localmente
+## Executar e testar
 
 ```bash
 git clone https://github.com/HelioConde/Super-Mario-in-JavaScript-html.git
 cd Super-Mario-in-JavaScript-html
+npm run check
 python -m http.server 8000
 ```
 
-Acesse `http://localhost:8000`.
+Acesse `http://localhost:8000`. O Node.js é necessário **apenas para os testes**; o jogo roda sem servidor de backend.
 
-## Limitações e próximos passos
+## Estrutura
 
-A física implementa pouso em superfícies horizontais. Ainda faltam colisões laterais/teto, coleta de moedas, inimigos, checkpoints, sons dedicados a cada evento e fases estruturadas. O cenário histórico é composto por blocos posicionados diretamente no HTML; a evolução ideal será separar mapa, renderização e mecânicas em módulos. A versão precisa de teste visual e funcional em navegadores desktop e mobile antes de ser considerada estável.
+- `index.html`: estrutura semântica do jogo.
+- `css/game.css`: layout responsivo e menus.
+- `js/levels.js`: mapas editáveis, armazenados em dados.
+- `js/game.js`: física, renderização, estados, inimigos e interações.
+- `tests/levels.test.js`: testes automáticos de integridade dos mapas.
+- `.github/workflows/quality.yml`: validação no GitHub Actions.
+- `img/`, `song/`, `js/script.js`: recursos e protótipo histórico preservados.
 
-Feito por [Hélio Conde](https://github.com/HelioConde).
+## Qualidade e limitações
+
+A integridade dos mapas e a sintaxe têm verificações automáticas. Ainda são necessários testes visuais e reais de gameplay, principalmente em dispositivos móveis. Física e inimigos usam regras simples; faltam acessibilidade ampliada, editor visual de fases, arte original e uma suíte de testes ponta a ponta.
+
+Desenvolvido por [Hélio Conde](https://github.com/HelioConde).
