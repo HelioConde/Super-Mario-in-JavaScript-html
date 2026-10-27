@@ -44,3 +44,38 @@ test("classic homepage retains original sprites and starts",async({page})=>{
  await page.locator("#saveKeyReturn").click();
  expect(errors).toEqual([]);
 });
+
+for(const device of [{name:"classic-desktop",width:1366,height:768},{name:"classic-mobile",width:390,height:844},{name:"classic-small",width:320,height:640}]){
+ test(device.name+" - original assets, frames and layout audit",async({page})=>{
+  const errors=[],broken=[];
+  page.on("pageerror",error=>errors.push(error.message));
+  page.on("response",response=>{if(response.status()>=400&&/\.(png|jpg|jpeg|js|css)(\?|$)/i.test(response.url()))broken.push(response.url()+" "+response.status());});
+  await page.setViewportSize({width:device.width,height:device.height});
+  await page.goto("/");
+  await expect(page.locator(".classic-start")).toBeVisible();
+  await page.screenshot({path:"artifacts/screenshots/"+device.name+"-full-menu.png",fullPage:true,animations:"disabled"});
+  await page.locator(".classic-start").click();
+  await expect(page.locator("#player")).toHaveAttribute("data-sprite","./img/mario.png");
+  await expect(page.locator("#player")).toHaveAttribute("data-sprite-status","ready");
+  const info=await page.evaluate(async()=>{
+   const player=document.querySelector("#player"),logo=document.querySelector("#logo2 img");
+   const sheet=new Image();sheet.src="./img/mario.png";await sheet.decode();
+   const background=getComputedStyle(player).backgroundImage;
+   const rect=player.getBoundingClientRect();
+   return {sheetWidth:sheet.naturalWidth,sheetHeight:sheet.naturalHeight,background,animation:player.dataset.animation,playerRect:{x:rect.x,y:rect.y,width:rect.width,height:rect.height},logoLoaded:logo.complete&&logo.naturalWidth>0,groundCount:document.querySelectorAll('[class*="piso"]').length,screenWidth:innerWidth,hasHorizontalPlayerOverflow:rect.right>innerWidth};
+  });
+  fs.writeFileSync("artifacts/screenshots/"+device.name+"-diagnostics.json",JSON.stringify({info,errors,broken},null,2));
+  expect(info.sheetWidth).toBeGreaterThan(870);
+  expect(info.sheetHeight).toBeGreaterThan(155);
+  expect(info.logoLoaded).toBe(true);
+  expect(info.groundCount).toBeGreaterThan(20);
+  expect(info.background).toContain("mario.png");
+  expect(broken).toEqual([]);
+  expect(errors).toEqual([]);
+  await page.screenshot({path:"artifacts/screenshots/"+device.name+"-full-game.png",fullPage:true,animations:"disabled"});
+  await page.keyboard.down("ArrowRight");await page.waitForTimeout(200);await page.keyboard.up("ArrowRight");
+  await page.screenshot({path:"artifacts/screenshots/"+device.name+"-moving.png",fullPage:false});
+  await page.keyboard.press("Space");await page.waitForTimeout(100);
+  await page.screenshot({path:"artifacts/screenshots/"+device.name+"-jump.png",fullPage:false});
+ });
+}
