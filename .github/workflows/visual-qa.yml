@@ -1,0 +1,28 @@
+name: Visual QA
+on:
+  push:
+    branches: [gh-pages, "improve/**"]
+  pull_request:
+    branches: [gh-pages]
+permissions:
+  contents: read
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:visual
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mario-visual-screenshots
+          path: |
+            artifacts/screenshots/**
+            playwright-report/**
+          if-no-files-found: ignore
